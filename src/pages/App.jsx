@@ -31,6 +31,17 @@ function copy(text) {
     navigator.clipboard?.writeText(text).catch(() => { })
 }
 
+// QR Code generator using canvas
+function generateQR(text, size = 200) {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    // Simple QR code using Google Charts API
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`
+    
+    return qrUrl
+}
+
 export default function App() {
     const [cfg, setCfg] = useLocalStorage('peer.cfg', defaultConfig)
     const [label, setLabel] = useLocalStorage('peer.label', '')
@@ -42,6 +53,7 @@ export default function App() {
     const [muted, setMuted] = useState(false)
     const [connected, setConnected] = useState(false)
     const [streamActive, setStreamActive] = useState(false)
+    const [showQR, setShowQR] = useState(false)
 
     const peerRef = useRef(null)
     const connRef = useRef(null)
@@ -184,6 +196,8 @@ export default function App() {
     }
 
     const connectDisabled = !peerIdInput || status !== 'ready'
+    const shareableUrl = myId ? `${window.location.origin}${window.location.pathname}?peer=${myId}` : ''
+    const qrUrl = myId ? generateQR(shareableUrl) : ''
 
     return (
         <div className="app">
@@ -199,7 +213,23 @@ export default function App() {
                         <div className="mono" style={{ wordBreak: 'break-all' }}>{myId || 'Starting…'}</div>
                     </div>
                     <button className="secondary" onClick={() => copy(myId)} disabled={!myId}>Copy ID</button>
+                    <button className="secondary" onClick={() => setShowQR(!showQR)} disabled={!myId}>
+                        {showQR ? 'Hide QR' : 'Show QR'}
+                    </button>
                 </div>
+
+                {showQR && myId && (
+                    <div className="card" style={{ marginTop: 16, padding: 16, textAlign: 'center' }}>
+                        <div className="small" style={{ marginBottom: 8 }}>Scan this QR code to share your Peer ID</div>
+                        <img src={qrUrl} alt="QR Code" style={{ maxWidth: '200px', margin: '0 auto', display: 'block' }} />
+                        <div className="small" style={{ marginTop: 8, opacity: 0.7, wordBreak: 'break-all' }}>
+                            {shareableUrl}
+                        </div>
+                        <button className="secondary" onClick={() => copy(shareableUrl)} style={{ marginTop: 8 }}>
+                            Copy Shareable URL
+                        </button>
+                    </div>
+                )}
 
                 <div className="grid" style={{ marginTop: 16 }}>
                     <div className="card" style={{ padding: 16 }}>
@@ -250,6 +280,7 @@ export default function App() {
                         <li>Both users must open this page and share their Peer IDs to connect.</li>
                         <li>Audio is sent end-to-end via WebRTC. Without your own TURN, very strict NATs may block audio.</li>
                         <li>Over GitHub Pages, only static hosting is available; we use PeerJS public broker for signalling.</li>
+                        <li>Use the QR code to quickly share your Peer ID with others on the same Wi-Fi.</li>
                     </ul>
                 </div>
             </div>
