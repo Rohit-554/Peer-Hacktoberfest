@@ -54,11 +54,14 @@ export default function App() {
     const [connected, setConnected] = useState(false)
     const [streamActive, setStreamActive] = useState(false)
     const [showQR, setShowQR] = useState(false)
+    const [messages, setMessages] = useState([])
+    const [msgInput, setMsgInput] = useState('')
 
     const peerRef = useRef(null)
     const connRef = useRef(null)
     const mediaRef = useRef(null)
     const audioRef = useRef(null)
+    const chatEndRef = useRef(null)
 
     const peerOptions = useMemo(() => ({
         host: cfg.host, port: Number(cfg.port), secure: !!cfg.secure, path: cfg.path || '/',
@@ -110,6 +113,10 @@ export default function App() {
         }
     }, [peerOptions])
 
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [messages])
+
     function pushLog(x) { setLog((l) => [x, ...l].slice(0, 200)) }
 
     async function getMic() {
@@ -138,6 +145,14 @@ export default function App() {
         conn.on('data', (data) => {
             if (data?.type === 'presence') {
                 setPeers((p) => mergePeers(p, data.payload))
+            } else if (data?.type === 'message') {
+                setMessages((msgs) => [...msgs, {
+                    text: data.text,
+                    sender: data.sender,
+                    timestamp: data.timestamp,
+                    isMe: false
+                }])
+                pushLog(`Message from ${data.sender}: ${data.text}`)
             } else if (data?.type === 'signal') {
                 // Place for extra messages if needed
             }
@@ -195,12 +210,245 @@ export default function App() {
         }
     }
 
+    function sendMessage() {
+        if (!msgInput.trim() || !connRef.current?.open) return
+        
+        const message = {
+            type: 'message',
+            text: msgInput,
+            sender: label || 'Anonymous',
+            timestamp: Date.now()
+        }
+        
+        connRef.current.send(message)
+        
+        setMessages((msgs) => [...msgs, {
+            text: msgInput,
+            sender: label || 'Anonymous',
+            timestamp: Date.now(),
+            isMe: true
+        }])
+        
+        pushLog(`You sent: ${msgInput}`)
+        setMsgInput('')
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            sendMessage()
+        }
+    }
+
     const connectDisabled = !peerIdInput || status !== 'ready'
     const shareableUrl = myId ? `${window.location.origin}${window.location.pathname}?peer=${myId}` : ''
     const qrUrl = myId ? generateQR(shareableUrl) : ''
 
     return (
         <div className="app">
+            <style>{`
+                .app {
+                    min-height: 100vh;
+                    background: #0f172a;
+                    color: #e2e8f0;
+                    padding: 20px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                }
+                .card {
+                    background: #1e293b;
+                    border-radius: 12px;
+                    padding: 20px;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                }
+                .header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                }
+                .h {
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 600;
+                    color: #f1f5f9;
+                }
+                .badge {
+                    background: #334155;
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    font-weight: 500;
+                }
+                .badge.small {
+                    font-size: 11px;
+                    padding: 4px 8px;
+                }
+                .row {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                }
+                .grow {
+                    flex: 1;
+                }
+                .small {
+                    font-size: 13px;
+                    color: #94a3b8;
+                    margin-bottom: 4px;
+                }
+                .mono {
+                    font-family: 'Courier New', monospace;
+                    font-size: 13px;
+                    background: #0f172a;
+                    padding: 8px;
+                    border-radius: 6px;
+                    margin-top: 4px;
+                }
+                button {
+                    background: #3b82f6;
+                    color: white;
+                    border: none;
+                    padding: 10px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                }
+                button:hover:not(:disabled) {
+                    background: #2563eb;
+                    transform: translateY(-1px);
+                }
+                button:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+                button.secondary {
+                    background: #475569;
+                }
+                button.secondary:hover:not(:disabled) {
+                    background: #334155;
+                }
+                button.primary {
+                    background: #10b981;
+                }
+                button.primary:hover:not(:disabled) {
+                    background: #059669;
+                }
+                button.danger {
+                    background: #ef4444;
+                }
+                button.danger:hover:not(:disabled) {
+                    background: #dc2626;
+                }
+                input {
+                    background: #0f172a;
+                    border: 1px solid #334155;
+                    color: #e2e8f0;
+                    padding: 10px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    width: 100%;
+                }
+                input:focus {
+                    outline: none;
+                    border-color: #3b82f6;
+                }
+                .grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 16px;
+                }
+                .list {
+                    max-height: 200px;
+                    overflow-y: auto;
+                    background: #0f172a;
+                    padding: 12px;
+                    border-radius: 6px;
+                }
+                .list::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .list::-webkit-scrollbar-track {
+                    background: #1e293b;
+                }
+                .list::-webkit-scrollbar-thumb {
+                    background: #475569;
+                    border-radius: 3px;
+                }
+                ul {
+                    margin: 8px 0;
+                    padding-left: 20px;
+                }
+                li {
+                    margin: 4px 0;
+                }
+                .chat-container {
+                    background: #0f172a;
+                    border-radius: 8px;
+                    padding: 16px;
+                    height: 400px;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .chat-messages {
+                    flex: 1;
+                    overflow-y: auto;
+                    margin-bottom: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                .chat-messages::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .chat-messages::-webkit-scrollbar-track {
+                    background: #1e293b;
+                }
+                .chat-messages::-webkit-scrollbar-thumb {
+                    background: #475569;
+                    border-radius: 3px;
+                }
+                .message {
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    max-width: 70%;
+                    word-wrap: break-word;
+                }
+                .message.me {
+                    background: #3b82f6;
+                    align-self: flex-end;
+                    margin-left: auto;
+                }
+                .message.other {
+                    background: #334155;
+                    align-self: flex-start;
+                }
+                .message-sender {
+                    font-size: 11px;
+                    font-weight: 600;
+                    margin-bottom: 2px;
+                    opacity: 0.8;
+                }
+                .message-text {
+                    font-size: 14px;
+                }
+                .message-time {
+                    font-size: 10px;
+                    opacity: 0.6;
+                    margin-top: 2px;
+                }
+                .chat-input-container {
+                    display: flex;
+                    gap: 8px;
+                }
+                .chat-input {
+                    flex: 1;
+                }
+            `}</style>
+            
             <div className="card">
                 <div className="header">
                     <h2 className="h">Local P2P Voice Chat</h2>
@@ -262,6 +510,43 @@ export default function App() {
                 </div>
 
                 <div className="card" style={{ marginTop: 16, padding: 16 }}>
+                    <div className="small" style={{ marginBottom: 8 }}>Text Chat</div>
+                    <div className="chat-container">
+                        <div className="chat-messages">
+                            {messages.length === 0 ? (
+                                <div className="small" style={{ textAlign: 'center', opacity: 0.5, marginTop: 'auto', marginBottom: 'auto' }}>
+                                    No messages yet. Connect with a peer to start chatting!
+                                </div>
+                            ) : (
+                                messages.map((msg, i) => (
+                                    <div key={i} className={`message ${msg.isMe ? 'me' : 'other'}`}>
+                                        <div className="message-sender">{msg.sender}</div>
+                                        <div className="message-text">{msg.text}</div>
+                                        <div className="message-time">
+                                            {new Date(msg.timestamp).toLocaleTimeString()}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            <div ref={chatEndRef} />
+                        </div>
+                        <div className="chat-input-container">
+                            <input 
+                                className="chat-input" 
+                                placeholder={connected ? "Type a message..." : "Connect to a peer first"} 
+                                value={msgInput} 
+                                onChange={(e) => setMsgInput(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                disabled={!connected}
+                            />
+                            <button onClick={sendMessage} disabled={!connected || !msgInput.trim()} className="primary">
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="card" style={{ marginTop: 16, padding: 16 }}>
                     <audio ref={audioRef} autoPlay playsInline />
                 </div>
 
@@ -281,6 +566,7 @@ export default function App() {
                         <li>Audio is sent end-to-end via WebRTC. Without your own TURN, very strict NATs may block audio.</li>
                         <li>Over GitHub Pages, only static hosting is available; we use PeerJS public broker for signalling.</li>
                         <li>Use the QR code to quickly share your Peer ID with others on the same Wi-Fi.</li>
+                        <li>Text chat works independently of voice calls - you can chat without calling.</li>
                     </ul>
                 </div>
             </div>
