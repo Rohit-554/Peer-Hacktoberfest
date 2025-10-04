@@ -1,0 +1,35 @@
+name: Feature - HTTPS dev server
+description: Enable HTTPS local dev for cross-device testing
+labels: ["feature", "devx"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Enable `vite` dev over HTTPS so microphone permissions and cross-device LAN testing work.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Enable HTTPS dev server for cross-device LAN testing
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: Dev certs, commands, docs
+      placeholder: Generate mkcert or openssl certs and configure Vite server. Document steps for Windows/macOS/Linux.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add HTTPS config to vite.config.js with cert/key paths
+        - label: Add scripts to generate local certs
+        - label: Document how to trust certs and run HTTPS dev
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - App runs at https://localhost:5173 or similar
+        - Mic permissions work; site reachable via LAN IP over HTTPS

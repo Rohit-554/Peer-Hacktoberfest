@@ -1,6 +1,6 @@
 name: Feature Request
 description: Propose a new capability or improvement
-labels: ["feature", "triage", "hacktoberfest-2025"]
+labels: ["feature", "triage"]
 assignees: []
 body:
   - type: input

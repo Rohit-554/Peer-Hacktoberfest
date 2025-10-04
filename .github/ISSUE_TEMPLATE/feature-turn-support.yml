@@ -1,0 +1,36 @@
+name: Feature - TURN server credentials
+description: Add support for custom TURN server credentials to improve NAT traversal
+labels: ["feature", "enhancement", "networking"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Allow configuring TURN servers to improve connectivity behind strict NATs/firewalls.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Add your own TURN server credentials for robust NAT traversal
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: Code/UI changes required
+      placeholder: Add TURN credentials into iceServers in App.jsx via env or UI settings. Persist in localStorage.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add UI fields to capture TURN URL, username, credential
+        - label: Validate and persist credentials securely (local only)
+        - label: Update PeerJS config to include TURN servers
+        - label: Add doc section in README on running/obtaining TURN
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - With valid TURN, calls connect across symmetric NATs more reliably
+        - Incorrect TURN gracefully falls back or shows helpful errors

@@ -1,0 +1,35 @@
+name: Feature - Mic levels and mute indicators
+description: Visual indicators for mic input and mute status
+labels: ["feature", "UX"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add simple audio level meter and clear mute indicators for self and remote peers.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Add UI indicators for mic levels and mute states
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: Web Audio API metering, UI elements
+      placeholder: Use AudioContext AnalyserNode to compute volume; display as bar or dots next to name.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add metering of local audio with AnalyserNode
+        - label: Add mute state icons for local and remote
+        - label: Optimize for low CPU usage
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Meter updates smoothly at 15–30fps
+        - Mute icons reflect actual track enabled state

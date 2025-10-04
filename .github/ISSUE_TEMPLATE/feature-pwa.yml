@@ -1,0 +1,36 @@
+name: Feature - PWA support
+description: Make the app installable with a basic offline experience
+labels: ["feature", "enhancement", "pwa"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Turn the app into a Progressive Web App with install support and a simple offline splash page.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Add PWA support (installable, offline splash)
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: Service worker, manifest, icons
+      placeholder: Add web app manifest, service worker (workbox or vite-plugin-pwa), and icons. Offline page for basic UX.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add manifest.json and app icons
+        - label: Add vite-plugin-pwa and configure SW
+        - label: Add basic offline splash page
+        - label: Document installation steps (iOS/Android/Desktop)
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Install prompt available on supported browsers
+        - App shows friendly offline page when no network

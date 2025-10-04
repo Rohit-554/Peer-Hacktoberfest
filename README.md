@@ -58,3 +58,10 @@ Use GitHub Issues to plan and track work. This repo includes templates for:
 - Good First Issue: small, well-scoped starter tasks
 
 When creating a new issue on GitHub, pick the appropriate template to get started quickly.
+
+## Thankyou-Contributors
+
+<a href="https://github.com/Rohit-554/Peer-Hacktoberfest/graphs/contributors">
+	<img src="https://contrib.rocks/image?repo=Rohit-554/Peer-Hacktoberfest" alt="Contributors" />
+
+</a>

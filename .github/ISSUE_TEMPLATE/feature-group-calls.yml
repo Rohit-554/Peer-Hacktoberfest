@@ -1,0 +1,36 @@
+name: Feature - Group calls (multi-peer mesh)
+description: Support multiple peers in a call via mesh
+labels: ["feature", "enhancement", "webrtc"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add multi-peer mesh calling (each peer connects to others). Note: bandwidth scales O(n^2).
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Support group calls (multi-peer mesh)
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: Multi-call handling, UI, and performance notes
+      placeholder: Maintain a list of peer IDs and establish media connections with each; provide mute per-peer and leave controls.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Manage multiple RTCPeerConnections and audio elements
+        - label: UI for peer list and per-peer controls
+        - label: Connection lifecycle handling (join/leave)
+        - label: Basic performance guidance in README
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - 3+ peers can converse with acceptable latency on LAN
+        - UI remains usable; resources are cleaned up on leave

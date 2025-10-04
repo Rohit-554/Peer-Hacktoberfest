@@ -1,0 +1,38 @@
+name: Feature - QR code sharing of Peer ID
+description: Add QR code sharing for easier Peer ID exchange
+labels: ["feature", "enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Implement a QR code option to share the local Peer ID for faster pairing on mobile.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Add QR code sharing of Peer ID
+      placeholder: Short statement of the goal
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this be implemented?
+      placeholder: e.g., Add a "Show QR" button that renders a QR of the current URL or Peer ID using a small QR library.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add a "Show QR" button near the Copy ID button
+        - label: Generate QR for Peer ID (and optionally a shareable URL)
+        - label: Add a modal or inline panel to display QR (mobile-friendly)
+        - label: Test on iOS/Android mobile browsers
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - QR shows the current Peer ID clearly and scannable at arm’s length
+        - Works on desktop and mobile
+        - No layout regressions

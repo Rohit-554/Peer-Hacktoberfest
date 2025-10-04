@@ -1,0 +1,36 @@
+name: Feature - Room codes & presence
+description: Add room codes and a lightweight presence list
+labels: ["feature", "enhancement", "UX"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Introduce room codes for simpler pairing and display connected peers (presence).
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Add room codes and simple presence list
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work (static-friendly)?
+      placeholder: Use data channel to exchange presence once connected; allow entering a short room code that maps to peer IDs manually.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add room code field to the UI
+        - label: Broadcast/display simple presence (name, ID)
+        - label: Remember recent rooms in localStorage
+        - label: Add guidance text for manual ID exchange limits
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can share a simple room code
+        - Presence list updates when peers connect/disconnect

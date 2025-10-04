@@ -1,5 +1,5 @@
 {
-  "name": "p2p-voice-chat",
+  "name": "peer-hacktoberfest",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -16,5 +16,13 @@
   "devDependencies": {
     "@vitejs/plugin-react": "4.3.3",
     "vite": "5.4.9"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rohit-554/Peer-Hacktoberfest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rohit-554/Peer-Hacktoberfest/issues"
+  },
+  "homepage": "https://Rohit-554.github.io/Peer-Hacktoberfest/"
 }
