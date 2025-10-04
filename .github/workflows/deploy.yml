@@ -30,6 +30,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
       - name: Set base path for GitHub Pages
         shell: bash
         run: echo "VITE_BASE_PATH=/Peer-Hacktoberfest/" >> $GITHUB_ENV

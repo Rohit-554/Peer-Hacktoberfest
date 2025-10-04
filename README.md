@@ -36,6 +36,8 @@ WebRTC media is encrypted end-to-end. Without your own TURN server, very strict 
 3. In GitHub: Settings → Pages → Build and deployment → Source: GitHub Actions. No further config needed.
 4. Push to `main`. The `Deploy Vite site to GitHub Pages` workflow will build and publish to Pages.
 
+If deployment fails with a 404 from deploy-pages, first visit Settings → Pages once to initialize Pages for the repo; then re-run the workflow.
+
 The workflow automatically sets the Vite base path to `/${REPO_NAME}/` so assets load under project pages. If your repo is a user/organization site named `<username>.github.io`, Vite base `/` is fine; you can remove the env override in the workflow.
 
 ## Notes and limitations
