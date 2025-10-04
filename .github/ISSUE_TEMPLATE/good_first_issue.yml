@@ -1,0 +1,35 @@
+name: Good First Issue
+description: Small, well-scoped task suitable for newcomers
+labels: ["good first issue", "help wanted"]
+assignees: []
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Task Title
+      placeholder: e.g., Add a mute icon to the button
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Background and why this matters
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: Concrete steps to complete this task
+      placeholder: |
+        1. Update styles in src/styles.css
+        2. Modify button in src/pages/App.jsx
+        3. Test locally with npm run dev
+  - type: textarea
+    id: definition
+    attributes:
+      label: Definition of Done
+      description: What should be true when this is complete?
+      placeholder: |
+        - Button shows an icon
+        - Works on mobile and desktop
+        - No console errors

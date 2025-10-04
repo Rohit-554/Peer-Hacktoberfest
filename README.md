@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-Open the printed URL (e.g., http://localhost:5173). On another device on the same Wi‑Fi, open your PC’s LAN IP with the same port, like http://192.168.1.5:5173.
+Open the printed URL (e.g., http://localhost:5173). Note: getUserMedia (microphone) requires a secure context. It works on localhost but not over plain HTTP LAN IPs. For cross-device testing, deploy to GitHub Pages (HTTPS) or run Vite with HTTPS locally.
 
 ## How to use
 
@@ -48,3 +48,13 @@ The workflow automatically sets the Vite base path to `/${REPO_NAME}/` so assets
 
 - Edit `defaultConfig` in `src/pages/App.jsx` to point to a custom PeerServer if needed.
 - Add TURN credentials to `iceServers` for better NAT traversal.
+
+## Contribute and issues
+
+Use GitHub Issues to plan and track work. This repo includes templates for:
+
+- Next Steps Tasklist: pre-filled checklist of recommended enhancements
+- Feature Request: propose new capabilities
+- Good First Issue: small, well-scoped starter tasks
+
+When creating a new issue on GitHub, pick the appropriate template to get started quickly.

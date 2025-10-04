@@ -1,0 +1,28 @@
+name: Next Steps Tasklist
+description: Track the recommended next steps to enhance the app
+labels: ["enhancement", "planning"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this issue to track recommended improvements.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Suggested Tasks
+      description: Start by selecting items you want to pursue.
+      options:
+        - label: Add QR code sharing of Peer ID
+        - label: Add your own TURN server credentials for robust NAT traversal
+        - label: Add room codes and simple presence list
+        - label: Enable HTTPS dev server for cross-device LAN testing
+        - label: Support group calls (multi-peer mesh)
+        - label: Add UI indicators for mic levels and mute states
+        - label: Add PWA support (installable, offline splash)
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / Acceptance Criteria
+      description: Add details, edge cases, or definitions of done.
+      placeholder: e.g., QR button copies URL with ID; works on mobile.
