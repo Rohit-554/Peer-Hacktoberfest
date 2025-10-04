@@ -1,0 +1,22 @@
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Build output
+/dist
+/.cache
+.cache/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
