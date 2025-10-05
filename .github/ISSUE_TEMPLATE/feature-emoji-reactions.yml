@@ -1,0 +1,37 @@
+name: Feature - Emoji reactions
+description: Quick emoji reactions during chat
+labels: ["feature", "UX", "enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add quick emoji reactions for instant feedback.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Add emoji reaction buttons
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: Emoji picker or quick buttons that send reactions via data channel.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add emoji reaction UI
+        - label: Send reactions via data channel
+        - label: Display reactions in chat
+        - label: Add floating reaction animations
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can send emoji reactions
+        - Reactions appear in chat
+        - Smooth animation for reactions

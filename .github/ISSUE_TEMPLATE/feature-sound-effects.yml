@@ -1,0 +1,37 @@
+name: Feature - Sound effects
+description: Fun sound effects during chat
+labels: ["feature", "UX", "fun"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add playful sound effects for interactions.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Add sound effects for events
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: Play sounds for join/leave, message sent, reactions, etc.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add sound effect library
+        - label: Play sounds on key events
+        - label: Add toggle for sound effects
+        - label: Add volume control
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Sounds play on events
+        - Users can toggle sounds on/off
+        - Volume is adjustable

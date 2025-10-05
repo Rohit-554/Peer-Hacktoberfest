@@ -1,0 +1,37 @@
+name: Feature - Background noise filter
+description: Enhanced noise suppression controls
+labels: ["feature", "audio", "UX"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add toggle for advanced noise suppression.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: User-controlled noise filtering
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: Toggle noise suppression and echo cancellation settings.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add noise filter toggle UI
+        - label: Update audio constraints dynamically
+        - label: Save preference to localStorage
+        - label: Add visual indicator for filter status
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can toggle noise filter
+        - Setting persists across sessions
+        - Clear visual feedback

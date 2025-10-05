@@ -1,0 +1,37 @@
+name: Feature - Voice notes
+description: Record and send voice messages
+labels: ["feature", "audio", "enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Record short voice messages to send.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Send voice recordings
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: Use MediaRecorder to record audio and send via data channel.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add record button
+        - label: Implement audio recording
+        - label: Send recording via data channel
+        - label: Add playback controls for voice notes
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can record voice notes
+        - Recordings are sent to peers
+        - Recipients can play recordings

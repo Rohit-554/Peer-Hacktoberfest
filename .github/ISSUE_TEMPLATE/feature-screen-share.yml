@@ -1,0 +1,37 @@
+name: Feature - Screen sharing
+description: Share screen with connected peers
+labels: ["feature", "enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add ability to share screen with peers during calls.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Enable screen sharing in P2P calls
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: Use getDisplayMedia API to capture screen and send via WebRTC.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add screen share button to UI
+        - label: Implement screen capture using getDisplayMedia
+        - label: Display shared screen for remote peers
+        - label: Add stop screen share option
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can share their screen
+        - Remote peers can view shared screen
+        - Screen sharing can be stopped
