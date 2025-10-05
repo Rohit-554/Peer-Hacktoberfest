@@ -45,9 +45,11 @@ function generateQR(text, size = 200) {
 export default function App() {
     const [cfg, setCfg] = useLocalStorage('peer.cfg', defaultConfig)
     const [label, setLabel] = useLocalStorage('peer.label', '')
+    const [recentRooms, setRecentRooms] = useLocalStorage('peer.recentRooms', [])
     const [status, setStatus] = useState('idle')
     const [myId, setMyId] = useState('')
     const [peerIdInput, setPeerIdInput] = useState('')
+    const [roomCode, setRoomCode] = useState('')
     const [peers, setPeers] = useState([])
     const [log, setLog] = useState([])
     const [muted, setMuted] = useState(false)
@@ -56,6 +58,7 @@ export default function App() {
     const [showQR, setShowQR] = useState(false)
     const [messages, setMessages] = useState([])
     const [msgInput, setMsgInput] = useState('')
+    const [showRecentRooms, setShowRecentRooms] = useState(false)
 
     const peerRef = useRef(null)
     const connRef = useRef(null)
@@ -200,15 +203,6 @@ export default function App() {
         setMuted(tracks.length ? !tracks[0].enabled : !muted)
     }
 
-    function broadcastPresence() {
-        const entry = { id: myId, label: label || 'Anonymous', ts: Date.now() }
-        if (connRef.current?.open) {
-            connRef.current.send({ type: 'presence', payload: [entry] })
-            pushLog('Presence sent')
-        } else {
-            pushLog('No data connection to send presence')
-        }
-    }
 
     function sendMessage() {
         if (!msgInput.trim() || !connRef.current?.open) return
@@ -237,6 +231,68 @@ export default function App() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
             sendMessage()
+        }
+    }
+
+    // Room code functions
+    function generateRoomCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+        let result = ''
+        for (let i = 0; i < 6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length))
+        }
+        return result
+    }
+
+    function createRoom() {
+        const newRoomCode = generateRoomCode()
+        setRoomCode(newRoomCode)
+        pushLog(`Room created: ${newRoomCode}`)
+        
+        // Add to recent rooms
+        const roomEntry = {
+            code: newRoomCode,
+            timestamp: Date.now(),
+            participants: [myId]
+        }
+        setRecentRooms(prev => [roomEntry, ...prev.filter(r => r.code !== newRoomCode)].slice(0, 10))
+    }
+
+    function joinRoom() {
+        if (!roomCode.trim()) return
+        pushLog(`Joining room: ${roomCode}`)
+        
+        // Add to recent rooms
+        const roomEntry = {
+            code: roomCode,
+            timestamp: Date.now(),
+            participants: [myId]
+        }
+        setRecentRooms(prev => [roomEntry, ...prev.filter(r => r.code !== roomCode)].slice(0, 10))
+    }
+
+    function selectRecentRoom(room) {
+        setRoomCode(room.code)
+        setShowRecentRooms(false)
+    }
+
+    function removeRecentRoom(roomCode) {
+        setRecentRooms(prev => prev.filter(r => r.code !== roomCode))
+    }
+
+    // Enhanced presence broadcasting
+    function broadcastPresence() {
+        const entry = { 
+            id: myId, 
+            label: label || 'Anonymous', 
+            roomCode: roomCode || null,
+            ts: Date.now() 
+        }
+        if (connRef.current?.open) {
+            connRef.current.send({ type: 'presence', payload: [entry] })
+            pushLog('Presence sent')
+        } else {
+            pushLog('No data connection to send presence')
         }
     }
 
@@ -479,6 +535,74 @@ export default function App() {
                     </div>
                 )}
 
+                {/* Room Code Section */}
+                <div className="card" style={{ marginTop: 16, padding: 16 }}>
+                    <div className="small" style={{ marginBottom: 8 }}>Room Management</div>
+                    <div className="row" style={{ marginBottom: 12 }}>
+                        <div className="grow">
+                            <input 
+                                placeholder="Enter room code (6 characters)" 
+                                value={roomCode} 
+                                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                                maxLength={6}
+                                style={{ textTransform: 'uppercase' }}
+                            />
+                        </div>
+                        <button onClick={createRoom} className="primary" disabled={status !== 'ready'}>
+                            Create Room
+                        </button>
+                        <button onClick={joinRoom} className="secondary" disabled={!roomCode.trim() || status !== 'ready'}>
+                            Join Room
+                        </button>
+                    </div>
+                    
+                    {recentRooms.length > 0 && (
+                        <div>
+                            <div className="row" style={{ marginBottom: 8 }}>
+                                <div className="small">Recent Rooms</div>
+                                <button 
+                                    className="secondary" 
+                                    onClick={() => setShowRecentRooms(!showRecentRooms)}
+                                    style={{ fontSize: '12px', padding: '4px 8px' }}
+                                >
+                                    {showRecentRooms ? 'Hide' : 'Show'} ({recentRooms.length})
+                                </button>
+                            </div>
+                            
+                            {showRecentRooms && (
+                                <div className="list" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                                    {recentRooms.map((room, i) => (
+                                        <div key={i} className="peer" style={{ marginBottom: '8px' }}>
+                                            <div>
+                                                <div style={{ fontWeight: '500' }}>{room.code}</div>
+                                                <div className="small">
+                                                    {new Date(room.timestamp).toLocaleDateString()} {new Date(room.timestamp).toLocaleTimeString()}
+                                                </div>
+                                            </div>
+                                            <div className="row" style={{ gap: '4px' }}>
+                                                <button 
+                                                    onClick={() => selectRecentRoom(room)}
+                                                    className="secondary"
+                                                    style={{ fontSize: '12px', padding: '4px 8px' }}
+                                                >
+                                                    Use
+                                                </button>
+                                                <button 
+                                                    onClick={() => removeRecentRoom(room.code)}
+                                                    className="danger"
+                                                    style={{ fontSize: '12px', padding: '4px 8px' }}
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
                 <div className="grid" style={{ marginTop: 16 }}>
                     <div className="card" style={{ padding: 16 }}>
                         <div className="small">1) Enter a friend's Peer ID</div>
@@ -550,6 +674,38 @@ export default function App() {
                     <audio ref={audioRef} autoPlay playsInline />
                 </div>
 
+                {/* Presence Display Section */}
+                <div className="card" style={{ marginTop: 16, padding: 16 }}>
+                    <div className="small" style={{ marginBottom: 8 }}>Connected Peers</div>
+                    {peers.length === 0 ? (
+                        <div className="small" style={{ opacity: 0.5, textAlign: 'center', padding: '20px' }}>
+                            No peers connected. Share your Peer ID or room code to connect with others.
+                        </div>
+                    ) : (
+                        <div className="list">
+                            {peers.map((peer, i) => (
+                                <div key={i} className="peer">
+                                    <div>
+                                        <div style={{ fontWeight: '500' }}>
+                                            {peer.label || 'Anonymous'} 
+                                            {peer.roomCode && <span className="badge small" style={{ marginLeft: '8px' }}>Room: {peer.roomCode}</span>}
+                                        </div>
+                                        <div className="small" style={{ fontFamily: 'monospace' }}>
+                                            {peer.id}
+                                        </div>
+                                        <div className="small" style={{ opacity: 0.7 }}>
+                                            Last seen: {new Date(peer.ts).toLocaleTimeString()}
+                                        </div>
+                                    </div>
+                                    <div className="badge small" style={{ backgroundColor: '#10b981' }}>
+                                        Online
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
                 <div className="card" style={{ marginTop: 16, padding: 16 }}>
                     <div className="small" style={{ marginBottom: 8 }}>Log</div>
                     <div className="list">
@@ -560,13 +716,22 @@ export default function App() {
                 </div>
 
                 <div className="small" style={{ marginTop: 16, opacity: .75 }}>
-                    Tips:
+                    <div style={{ fontWeight: '600', marginBottom: '8px' }}>📋 Getting Started Guide:</div>
                     <ul>
-                        <li>Both users must open this page and share their Peer IDs to connect.</li>
-                        <li>Audio is sent end-to-end via WebRTC. Without your own TURN, very strict NATs may block audio.</li>
-                        <li>Over GitHub Pages, only static hosting is available; we use PeerJS public broker for signalling.</li>
-                        <li>Use the QR code to quickly share your Peer ID with others on the same Wi-Fi.</li>
-                        <li>Text chat works independently of voice calls - you can chat without calling.</li>
+                        <li><strong>Room Codes:</strong> Create or join a room with a 6-character code for easier group coordination.</li>
+                        <li><strong>Peer ID Exchange:</strong> Share your Peer ID manually or use QR codes. Works best on same Wi-Fi network.</li>
+                        <li><strong>Connection Limits:</strong> Direct P2P connections work best with 2-4 people. For larger groups, consider multiple rooms.</li>
+                        <li><strong>Network Requirements:</strong> Audio is end-to-end encrypted via WebRTC. Very strict NATs may block audio.</li>
+                        <li><strong>Offline Support:</strong> App works offline for cached content and local P2P connections.</li>
+                    </ul>
+                    
+                    <div style={{ fontWeight: '600', marginTop: '12px', marginBottom: '8px' }}>⚠️ Manual ID Exchange Limitations:</div>
+                    <ul>
+                        <li>Peer IDs are long and complex - use QR codes or room codes for easier sharing</li>
+                        <li>Each connection requires manual setup - no automatic discovery</li>
+                        <li>Works best on same network (Wi-Fi/LAN) for optimal performance</li>
+                        <li>Maximum recommended: 4-6 participants per room for stable connections</li>
+                        <li>Corporate networks may block PeerJS signaling - try mobile hotspot if needed</li>
                     </ul>
                 </div>
             </div>
