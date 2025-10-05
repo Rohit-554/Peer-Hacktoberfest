@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator for PeerChat PWA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .instructions {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h1>🎨 PeerChat PWA Icon Generator</h1>
+        <p>This tool generates placeholder icons for your PWA. Click the buttons below to generate and download the required icon files.</p>
+        <p><strong>Note:</strong> These are placeholder icons. For production, replace with professional icons designed by a graphic designer.</p>
+    </div>
+
+    <div id="icons"></div>
+
+    <script>
+        function createIcon(size, filename) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Icon (simple microphone)
+            ctx.fillStyle = '#3b82f6';
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const iconSize = size * 0.6;
+            
+            // Microphone body
+            ctx.beginPath();
+            ctx.arc(centerX, centerY - iconSize * 0.1, iconSize * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Microphone stand
+            ctx.fillRect(centerX - iconSize * 0.05, centerY - iconSize * 0.1, iconSize * 0.1, iconSize * 0.4);
+            
+            // Base
+            ctx.fillRect(centerX - iconSize * 0.15, centerY + iconSize * 0.25, iconSize * 0.3, iconSize * 0.1);
+            
+            // Sound waves
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = size * 0.02;
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, iconSize * 0.3 + i * iconSize * 0.1, 0, Math.PI);
+                ctx.stroke();
+            }
+            
+            return canvas;
+        }
+        
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        const iconSizes = [
+            { size: 16, name: 'favicon-16x16.png' },
+            { size: 32, name: 'favicon-32x32.png' },
+            { size: 180, name: 'apple-touch-icon.png' },
+            { size: 192, name: 'pwa-192x192.png' },
+            { size: 512, name: 'pwa-512x512.png' },
+            { size: 150, name: 'mstile-150x150.png' }
+        ];
+        
+        iconSizes.forEach(icon => {
+            const container = document.createElement('div');
+            container.className = 'icon-preview';
+            
+            const canvas = createIcon(icon.size, icon.name);
+            container.appendChild(canvas);
+            
+            const button = document.createElement('button');
+            button.textContent = `Download ${icon.name}`;
+            button.onclick = () => downloadCanvas(canvas, icon.name);
+            container.appendChild(button);
+            
+            const label = document.createElement('div');
+            label.textContent = `${icon.size}x${icon.size}px`;
+            container.appendChild(label);
+            
+            document.getElementById('icons').appendChild(container);
+        });
+        
+        // Generate favicon.ico (16x16)
+        const faviconCanvas = createIcon(16, 'favicon.ico');
+        const faviconButton = document.createElement('button');
+        faviconButton.textContent = 'Download favicon.ico';
+        faviconButton.onclick = () => downloadCanvas(faviconCanvas, 'favicon.ico');
+        faviconButton.style.marginTop = '20px';
+        document.body.appendChild(faviconButton);
+    </script>
+</body>
+</html>

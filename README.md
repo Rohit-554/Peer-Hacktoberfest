@@ -1,13 +1,14 @@
-# Local P2P Voice Chat (React + Vite + WebRTC)
+# PeerChat - P2P Voice Chat (React + Vite + WebRTC + PWA)
 
-A zero-backend, end-to-end encrypted voice chat for people on the same Wi‑Fi (or over the internet) using WebRTC and PeerJS. Hosted on GitHub Pages.
+A zero-backend, end-to-end encrypted voice chat for people on the same Wi‑Fi (or over the internet) using WebRTC and PeerJS. Now with PWA support for installable, offline-capable experience!
 
 - Frontend: React + Vite
 - Signaling: PeerJS public cloud broker (0.peerjs.com)
 - Media: WebRTC (DTLS-SRTP, E2E encrypted)
+- PWA: Installable, offline support, auto-updates
 - Hosting: GitHub Pages (static)
 
-## Quick start (local)
+## 🚀 Quick start (local)
 
 1. Install Node.js 18+.
 2. Install dependencies and run the dev server:
@@ -18,6 +19,16 @@ npm run dev
 ```
 
 Open the printed URL (e.g., http://localhost:5173). Note: getUserMedia (microphone) requires a secure context. It works on localhost but not over plain HTTP LAN IPs. For cross-device testing, deploy to GitHub Pages (HTTPS) or run Vite with HTTPS locally.
+
+## 📱 PWA Installation
+
+PeerChat is now a Progressive Web App! Install it on your device for a native app experience:
+
+- **Android**: Chrome/Edge → Menu → "Add to Home screen"
+- **iOS**: Safari → Share → "Add to Home Screen"  
+- **Desktop**: Chrome/Edge → Install icon in address bar
+
+See [PWA_INSTALLATION.md](./PWA_INSTALLATION.md) for detailed installation steps.
 
 ## How to use
 
