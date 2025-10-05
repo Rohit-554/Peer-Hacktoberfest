@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:https": "vite --host",
     "build": "vite build",
-    "preview": "vite preview --port 5173 --strictPort"
+    "preview": "vite preview --port 5173 --strictPort",
+    "generate-cert": "node ./scripts/generate-cert.js"
   },
   "dependencies": {
     "peerjs": "1.5.2",
@@ -18,13 +20,6 @@
     "@vitejs/plugin-react": "4.3.3",
     "vite": "5.4.9",
     "vite-plugin-pwa": "^0.17.4"
-  },
-  {
-  "scripts": {
-  "dev": "vite",
-  "dev:https": "vite --host",
-  "build": "vite build",
-  "generate-cert": "node ./scripts/generate-cert.js"
   },
   "repository": {
     "type": "git",
