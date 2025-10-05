@@ -1,0 +1,37 @@
+name: Feature - Theme customization
+description: Dark and light theme options
+labels: ["feature", "UX", "design"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add light/dark theme toggle.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Multiple theme options
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: CSS variables for themes with localStorage persistence.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Create light theme color scheme
+        - label: Add theme toggle button
+        - label: Save theme preference
+        - label: Respect system theme preference
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can switch themes
+        - Theme persists across sessions
+        - Smooth transition between themes

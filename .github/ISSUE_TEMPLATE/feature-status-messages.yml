@@ -1,0 +1,37 @@
+name: Feature - Custom status
+description: Set availability status messages
+labels: ["feature", "UX"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add custom status messages for peers.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: User status indicators
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: Status presets (Available, Busy, Away) and custom messages.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add status selector UI
+        - label: Broadcast status to peers
+        - label: Display peer status
+        - label: Save status preference
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can set status
+        - Status visible to connected peers
+        - Status persists in session

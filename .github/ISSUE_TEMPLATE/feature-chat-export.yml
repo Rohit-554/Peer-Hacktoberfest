@@ -1,0 +1,37 @@
+name: Feature - Chat history export
+description: Save chat conversations to file
+labels: ["feature", "UX"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Export chat messages to a text file.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: Download chat history
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: Create downloadable text/JSON file from messages array.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add export button
+        - label: Format messages for export
+        - label: Create downloadable file
+        - label: Support multiple formats (TXT, JSON)
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can export chat
+        - File includes timestamps
+        - Clean, readable format

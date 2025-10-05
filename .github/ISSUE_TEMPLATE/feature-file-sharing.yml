@@ -1,0 +1,37 @@
+name: Feature - File sharing
+description: Share files with peers
+labels: ["feature", "enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Send files via P2P connection.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      value: P2P file transfer
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: How should this work?
+      placeholder: Use data channel to transfer files in chunks with progress.
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Tasks
+      options:
+        - label: Add file picker UI
+        - label: Implement chunked file transfer
+        - label: Show transfer progress
+        - label: Add download button for received files
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - Users can select and send files
+        - Transfer progress is visible
+        - Files can be downloaded by recipient
