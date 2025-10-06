@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Peer } from 'peerjs'
+import StatusSelector from "../components/StatusSelector";
+
 
 // Simple in-memory presence for same-tab demo. For multi-user on same Wi-Fi without a server,
 // users need to share their Peer IDs manually or via a QR/text. We add a QR helper below.
@@ -27,6 +29,8 @@ const defaultConfig = {
     path: '/' // default path for public broker
 }
 
+
+
 function copy(text) {
     navigator.clipboard?.writeText(text).catch(() => { })
 }
@@ -46,7 +50,11 @@ export default function App() {
     const [cfg, setCfg] = useLocalStorage('peer.cfg', defaultConfig)
     const [label, setLabel] = useLocalStorage('peer.label', '')
     const [recentRooms, setRecentRooms] = useLocalStorage('peer.recentRooms', [])
-    const [status, setStatus] = useState('idle')
+    // replacing const [status, setStatus] = useState('idle')
+
+    const [status, setStatus] = useState(localStorage.getItem("peer.status") || 'idle');
+    //Add a peerStatuses state object:
+    const [peerStatuses, setPeerStatuses] = useState({});
     const [myId, setMyId] = useState('')
     const [peerIdInput, setPeerIdInput] = useState('')
     const [roomCode, setRoomCode] = useState('')
@@ -61,10 +69,22 @@ export default function App() {
     const [showRecentRooms, setShowRecentRooms] = useState(false)
 
     const peerRef = useRef(null)
-    const connRef = useRef(null)
+    const connRef = useRef({})
     const mediaRef = useRef(null)
     const audioRef = useRef(null)
     const chatEndRef = useRef(null)
+
+
+    //adding function for better optimization
+    function getStatusColor(status) {
+      switch(status) {
+        case 'online': return '#10b981';
+        case 'away':   return '#f59e0b';
+        case 'busy':   return '#ef4444';
+        case 'offline':return '#6b7280';
+        default:       return '#10b981';
+      }
+    }
 
     const peerOptions = useMemo(() => ({
         host: cfg.host, port: Number(cfg.port), secure: !!cfg.secure, path: cfg.path || '/',
@@ -145,21 +165,49 @@ export default function App() {
         setConnected(true)
         pushLog('Connected to ' + conn.peer)
 
-        conn.on('data', (data) => {
-            if (data?.type === 'presence') {
-                setPeers((p) => mergePeers(p, data.payload))
-            } else if (data?.type === 'message') {
-                setMessages((msgs) => [...msgs, {
+      conn.on('data', (data) => {
+    if (!data) return;
+
+    switch (data.type) {
+        case 'presence':
+            // Merge presence info into peers list
+            setPeers((prevPeers) => mergePeers(prevPeers, data.payload));
+            break;
+
+        case 'message':
+            // Append incoming chat message
+            setMessages((msgs) => [
+                ...msgs,
+                {
                     text: data.text,
                     sender: data.sender,
                     timestamp: data.timestamp,
-                    isMe: false
-                }])
-                pushLog(`Message from ${data.sender}: ${data.text}`)
-            } else if (data?.type === 'signal') {
-                // Place for extra messages if needed
-            }
-        })
+                    isMe: false,
+                },
+            ]);
+            pushLog(`Message from ${data.sender}: ${data.text}`);
+            break;
+
+        case 'status-update':
+            // Update peerStatuses map with latest status
+            setPeerStatuses((prev) => ({
+                ...prev,
+                [conn.peer]: data.status,
+            }));
+            pushLog(`Status update from ${conn.peer}: ${data.status}`);
+            break;
+
+        case 'signal':
+            // Reserved for future signals
+            break;
+
+        default:
+            console.warn('Unknown data type received:', data);
+            break;
+    }
+});
+
+
 
         conn.on('close', () => {
             setConnected(false)
@@ -301,6 +349,7 @@ export default function App() {
     const qrUrl = myId ? generateQR(shareableUrl) : ''
 
     return (
+
         <div className="app">
             <style>{`
                 .app {
@@ -505,6 +554,30 @@ export default function App() {
                 }
             `}</style>
             
+            {/* availability Status Section  */}
+<div className="card" style={{ marginTop: 16, padding: 16 }}>
+  <div className="small" style={{ marginBottom: 8 }}>Your Availability</div>
+ <StatusSelector
+  status={status}
+  onChange={(newStatus) => {
+    setStatus(newStatus);
+    localStorage.setItem("peer.status", newStatus);
+
+    // Broadcast to all connected peers
+    peers.forEach((p) => {
+      const conn = connRef.current[p.id];
+      if (conn && conn.open) {
+        conn.send({ type: "status-update", status: newStatus });
+      }
+    });
+  }}
+/>
+
+</div>
+
+
+
+
             <div className="card">
                 <div className="header">
                     <h2 className="h">Local P2P Voice Chat</h2>
@@ -675,36 +748,53 @@ export default function App() {
                 </div>
 
                 {/* Presence Display Section */}
-                <div className="card" style={{ marginTop: 16, padding: 16 }}>
-                    <div className="small" style={{ marginBottom: 8 }}>Connected Peers</div>
-                    {peers.length === 0 ? (
-                        <div className="small" style={{ opacity: 0.5, textAlign: 'center', padding: '20px' }}>
-                            No peers connected. Share your Peer ID or room code to connect with others.
-                        </div>
-                    ) : (
-                        <div className="list">
-                            {peers.map((peer, i) => (
-                                <div key={i} className="peer">
-                                    <div>
-                                        <div style={{ fontWeight: '500' }}>
-                                            {peer.label || 'Anonymous'} 
-                                            {peer.roomCode && <span className="badge small" style={{ marginLeft: '8px' }}>Room: {peer.roomCode}</span>}
-                                        </div>
-                                        <div className="small" style={{ fontFamily: 'monospace' }}>
-                                            {peer.id}
-                                        </div>
-                                        <div className="small" style={{ opacity: 0.7 }}>
-                                            Last seen: {new Date(peer.ts).toLocaleTimeString()}
-                                        </div>
-                                    </div>
-                                    <div className="badge small" style={{ backgroundColor: '#10b981' }}>
-                                        Online
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+<div className="card" style={{ marginTop: 16, padding: 16 }}>
+  <div className="small" style={{ marginBottom: 8 }}>Connected Peers</div>
+  {peers.length === 0 ? (
+    <div className="small" style={{ opacity: 0.5, textAlign: 'center', padding: '20px' }}>
+      No peers connected. Share your Peer ID or room code to connect with others.
+    </div>
+  ) : (
+    <div className="list">
+      {peers.map((peer, i) => (
+        <div key={i} className="peer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div>
+            <div style={{ fontWeight: 500 }}>
+              {peer.label || 'Anonymous'} 
+              {peer.roomCode && (
+                <span className="badge small" style={{ marginLeft: '8px', backgroundColor: '#3b82f6' }}>
+                  Room: {peer.roomCode}
+                </span>
+              )}
+            </div>
+            <div className="small" style={{ fontFamily: 'monospace' }}>
+              {peer.id}
+            </div>
+            <div className="small" style={{ opacity: 0.7 }}>
+              Last seen: {new Date(peer.ts).toLocaleTimeString()}
+            </div>
+          </div>
+
+          {/* Dynamic Status Badge */}
+<div
+  className="badge small"
+  style={{
+    backgroundColor: getStatusColor(peerStatuses[peer.id]),
+    color: 'white',
+    padding: '2px 8px',
+    borderRadius: '6px',
+    fontWeight: 500,
+  }}
+>
+  {peerStatuses[peer.id]?.toUpperCase() || 'ONLINE'}
+</div>
+
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
 
                 <div className="card" style={{ marginTop: 16, padding: 16 }}>
                     <div className="small" style={{ marginBottom: 8 }}>Log</div>
