@@ -31,11 +31,15 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        navigateFallback: '/offline.html',
-        navigateFallbackDenylist: [/^\\/api\\//],
+        // navigateFallback: '/offline.html',
+
+        //  Fixed regex: only single backslashes needed in literal
+        navigateFallbackDenylist: [/^\/api\//],
+
         runtimeCaching: [
           {
-            urlPattern: /^https:\\/\\/0\\.peerjs\\.com\\//,
+            //  Fixed regex: escape dots properly, not slashes
+            urlPattern: /^https:\/\/0\.peerjs\.com\//,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'peerjs-cache',
@@ -46,7 +50,8 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\\/\\/api\\.qrserver\\.com\\//,
+            //  Fixed regex: same correction here
+            urlPattern: /^https:\/\/api\.qrserver\.com\//,
             handler: 'CacheFirst',
             options: {
               cacheName: 'qr-cache',

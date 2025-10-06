@@ -133,3 +133,35 @@ button:hover:not(:disabled) {
 audio {
   width: 100%;
 }
+
+/* adding style */
+.status-selector {
+  margin: 10px 0;
+  font-weight: 500;
+}
+
+.status-dot {
+  text-transform: capitalize;
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.status-dot.online {
+  background: #2ecc71;
+  color: white;
+}
+
+.status-dot.away {
+  background: #f1c40f;
+  color: black;
+}
+
+.status-dot.busy {
+  background: #e74c3c;
+  color: white;
+}
+
+.status-dot.offline {
+  background: #7f8c8d;
+  color: white;
+}
