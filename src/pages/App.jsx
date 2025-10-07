@@ -46,6 +46,41 @@ function generateQR(text, size = 200) {
     return qrUrl
 }
 
+//Helper function 
+async function toggleScreenShare() {
+  if (isScreenSharing) {
+    stopScreenShare();
+  } else {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      screenStreamRef.current = screenStream;
+      setIsScreenSharing(true);
+
+      // Send screen stream to all connected peers
+      peers.forEach((peer) => {
+        const conn = peerRef.current.connections[peer.id]?.[0];
+        if (conn) {
+          const sender = conn.peerConnection.getSenders().find(s => s.track.kind === "video");
+          if (sender) sender.replaceTrack(screenStream.getVideoTracks()[0]);
+        }
+      });
+
+      screenStream.getVideoTracks()[0].onended = stopScreenShare; // stops when user clicks browser stop
+    } catch (err) {
+      console.error("Screen share failed:", err);
+    }
+  }
+}
+
+function stopScreenShare() {
+  if (screenStreamRef.current) {
+    screenStreamRef.current.getTracks().forEach(track => track.stop());
+    screenStreamRef.current = null;
+  }
+  setIsScreenSharing(false);
+}
+
+
 export default function App() {
     const [cfg, setCfg] = useLocalStorage('peer.cfg', defaultConfig)
     const [label, setLabel] = useLocalStorage('peer.label', '')
@@ -74,8 +109,15 @@ export default function App() {
     const audioRef = useRef(null)
     const chatEndRef = useRef(null)
 
-
+    //Add State and Refs for Screen Sharing
+    const [isScreenSharing, setIsScreenSharing] = useState(false);
+    const [remoteScreenStream, setRemoteScreenStream] = useState(null);
+    const remoteScreenRef = useRef(null); // For displaying remote screen
+    // State to track if local screen is being shared
+    const [sharingScreen, setSharingScreen] = useState(false);
     //adding function for better optimization
+    const localScreenRef = useRef(null);
+
     function getStatusColor(status) {
       switch(status) {
         case 'online': return '#10b981';
@@ -85,6 +127,46 @@ export default function App() {
         default:       return '#10b981';
       }
     }
+
+
+      async function startScreenShare() {
+    try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        setSharingScreen(true);
+        localScreenRef.current = stream;
+
+        // Send this stream to all connected peers
+        Object.values(connRef.current).forEach(conn => {
+            if (conn && conn.open && conn.peerConnection) {
+                const sender = conn.peerConnection.getSenders().find(s => s.track?.kind === 'video');
+                if (sender) sender.replaceTrack(stream.getVideoTracks()[0]);
+            }
+        });
+
+        // Stop sharing if user stops manually
+        stream.getVideoTracks()[0].onended = () => stopScreenShare();
+    } catch (err) {
+        console.error('Screen share error:', err);
+        pushLog('Screen share error: ' + err.message);
+    }
+}
+
+function stopScreenShare() {
+    // Revert back to normal video/mic track
+    Object.values(connRef.current).forEach(conn => {
+        if (conn && conn.open && conn.peerConnection && mediaRef.current) {
+            const sender = conn.peerConnection.getSenders().find(s => s.track?.kind === 'video');
+            if (sender) sender.replaceTrack(mediaRef.current.getVideoTracks()[0]);
+        }
+    });
+
+    if (localScreenRef.current) {
+        localScreenRef.current.getTracks().forEach(track => track.stop());
+        localScreenRef.current = null;
+    }
+
+    setSharingScreen(false);
+}
 
     const peerOptions = useMemo(() => ({
         host: cfg.host, port: Number(cfg.port), secure: !!cfg.secure, path: cfg.path || '/',
@@ -118,17 +200,33 @@ export default function App() {
             setupDataConnection(conn)
         })
 
-        peer.on('call', async (call) => {
-            try {
-                const stream = await getMic()
-                call.answer(stream)
-                setStreamActive(true)
-                call.on('stream', (remote) => attachRemoteAudio(remote))
-                call.on('close', () => setStreamActive(false))
-            } catch (e) {
-                pushLog('Mic error: ' + e.message)
-            }
-        })
+       peer.on('call', async (call) => {
+    try {
+        if (call.metadata?.type === 'screen') {
+            // This is a screen share
+            call.answer(); // usually no local screen stream needed
+            call.on('stream', (remote) => {
+                setRemoteScreenStream(remote); // <-- store remote screen stream
+                if (remoteScreenRef.current) {
+                    remoteScreenRef.current.srcObject = remote;
+                }
+            });
+            call.on('close', () => setRemoteScreenStream(null));
+        } else {
+            // Normal audio call
+            const stream = await getMic();
+            call.answer(stream);
+            setStreamActive(true);
+            call.on('stream', (remote) => attachRemoteAudio(remote));
+            call.on('close', () => setStreamActive(false));
+        }
+    } catch (e) {
+        pushLog('Call error: ' + e.message);
+    }
+});
+
+
+
 
         return () => {
             peer.destroy()
@@ -585,15 +683,26 @@ export default function App() {
                 </div>
 
                 <div className="row" style={{ marginTop: 12 }}>
-                    <div className="grow">
-                        <div className="small">Your Peer ID</div>
-                        <div className="mono" style={{ wordBreak: 'break-all' }}>{myId || 'Starting…'}</div>
-                    </div>
-                    <button className="secondary" onClick={() => copy(myId)} disabled={!myId}>Copy ID</button>
-                    <button className="secondary" onClick={() => setShowQR(!showQR)} disabled={!myId}>
-                        {showQR ? 'Hide QR' : 'Show QR'}
-                    </button>
-                </div>
+    <div className="grow">
+        <div className="small">Your Peer ID</div>
+        <div className="mono" style={{ wordBreak: 'break-all' }}>{myId || 'Starting…'}</div>
+    </div>
+
+    <button className="secondary" onClick={() => copy(myId)} disabled={!myId}>Copy ID</button>
+    <button className="secondary" onClick={() => setShowQR(!showQR)} disabled={!myId}>
+        {showQR ? 'Hide QR' : 'Show QR'}
+    </button>
+
+    {/* Screen Share Button */}
+    <button
+        className="primary"
+        onClick={toggleScreenShare}
+        disabled={!connected || streamActive}
+    >
+        {isScreenSharing ? "Stop Screen Share" : "Share Screen"}
+    </button>
+</div>
+
 
                 {showQR && myId && (
                     <div className="card" style={{ marginTop: 16, padding: 16, textAlign: 'center' }}>
@@ -688,8 +797,46 @@ export default function App() {
                             <button disabled={!connected} onClick={() => callPeer(peerIdInput)} className="primary">Call</button>
                             <button disabled={!streamActive} onClick={endCall} className="danger">End Call</button>
                             <button disabled={!streamActive} onClick={toggleMute}>{muted ? 'Unmute' : 'Mute'}</button>
+
+                            <button onClick={startScreenShare} disabled={!connected || sharingScreen} className="secondary">Start Screen Share</button>
+                            <button onClick={stopScreenShare} disabled={!sharingScreen} className="secondary">Stop Screen Share</button>
                         </div>
+
+                    <div className="row" style={{ marginTop: 10 }}>
+    <button
+        className="secondary"
+        onClick={startScreenShare}
+        disabled={!connected || sharingScreen}
+    >
+        {sharingScreen ? 'Sharing...' : 'Share Screen'}
+    </button>
+    <button
+        className="secondary"
+        onClick={stopScreenShare}
+        disabled={!sharingScreen}
+    >
+        Stop Sharing
+    </button>
+</div>
+
                     </div>
+
+                    {/* Screen Share Display Card */}
+<div className="card" style={{ padding: 16, marginTop: 16 }}>
+    <div className="small">Shared Screen</div>
+    {remoteScreenStream ? (
+        <video
+            ref={remoteScreenRef}
+            autoPlay
+            playsInline
+            style={{ width: '100%', borderRadius: '8px', marginTop: '8px' }}
+        />
+    ) : (
+        <div className="small" style={{ opacity: 0.5, marginTop: 8 }}>
+            No screen being shared yet.
+        </div>
+    )}
+</div>
 
                     <div className="card" style={{ padding: 16 }}>
                         <div className="small">Status</div>
