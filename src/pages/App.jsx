@@ -547,6 +547,16 @@ export default function App() {
                     flex-direction: column;
                     gap: 8px;
                 }
+                .chat-messages::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .chat-messages::-webkit-scrollbar-track {
+                    background: #1e293b;
+                }
+                .chat-messages::-webkit-scrollbar-thumb {
+                    background: #475569;
+                    border-radius: 3px;
+                }
                 .message {
                     padding: 12px 16px;
                     border-radius: 12px;
@@ -759,10 +769,10 @@ export default function App() {
                         </div>
 
                         {/* Text Chat */}
-                        <div className="card fill">
+                        <div className="card">
                             <div className="section-title">Chat</div>
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                                <div className="chat-messages" style={{ flex: 1, overflowY: 'auto', marginBottom: 12 }}>
+                            <div style={{ height: '300px', display: 'flex', flexDirection: 'column' }}>
+                                <div className="chat-messages" style={{ height: '250px', overflowY: 'auto', marginBottom: 12, padding: '8px', background: '#0f172a', borderRadius: '6px' }}>
                                     {messages.length === 0 ? (
                                         <div style={{
                                             textAlign: 'center',
