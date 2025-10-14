@@ -53,9 +53,10 @@ export default function App() {
     const [isScreenSharing, setIsScreenSharing] = useState(false)
     const [remoteScreenStream, setRemoteScreenStream] = useState(null)
     const [sharingScreen, setSharingScreen] = useState(false)
+    const [isFullscreen, setIsFullscreen] = useState(false)
 
     const peerRef = useRef(null)
-    const connRef = useRef({})
+    const connRef = useRef(null)
     const mediaRef = useRef(null)
     const audioRef = useRef(null)
     const chatEndRef = useRef(null)
@@ -77,31 +78,34 @@ export default function App() {
             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
             setSharingScreen(true);
             localScreenRef.current = stream;
-            Object.values(connRef.current).forEach(conn => {
-                if (conn && conn.open && conn.peerConnection) {
-                    const sender = conn.peerConnection.getSenders().find(s => s.track?.kind === 'video');
-                    if (sender) sender.replaceTrack(stream.getVideoTracks()[0]);
-                }
-            });
+            
+            // Make a screen share call to the connected peer
+            if (peerRef.current && connRef.current && connRef.current.peer) {
+                const call = peerRef.current.call(connRef.current.peer, stream, { metadata: { type: 'screen' } });
+                call.on('close', () => {
+                    pushLog('Screen share call ended');
+                });
+                pushLog(`Screen sharing to peer: ${connRef.current.peer}`);
+            } else {
+                pushLog('No connected peer to share screen with');
+            }
+            
             stream.getVideoTracks()[0].onended = () => stopScreenShare();
+            pushLog('Screen sharing started');
         } catch (err) {
             console.error('Screen share error:', err);
             pushLog('Screen share error: ' + err.message);
+            setSharingScreen(false);
         }
     }
 
     function stopScreenShare() {
-        Object.values(connRef.current).forEach(conn => {
-            if (conn && conn.open && conn.peerConnection && mediaRef.current) {
-                const sender = conn.peerConnection.getSenders().find(s => s.track?.kind === 'video');
-                if (sender) sender.replaceTrack(mediaRef.current.getVideoTracks()[0]);
-            }
-        });
         if (localScreenRef.current) {
             localScreenRef.current.getTracks().forEach(track => track.stop());
             localScreenRef.current = null;
         }
         setSharingScreen(false);
+        pushLog('Screen sharing stopped');
     }
 
     const peerOptions = useMemo(() => ({
@@ -139,11 +143,12 @@ export default function App() {
                     call.answer();
                     call.on('stream', (remote) => {
                         setRemoteScreenStream(remote);
-                        if (remoteScreenRef.current) {
-                            remoteScreenRef.current.srcObject = remote;
-                        }
+                        pushLog('Received screen share stream');
                     });
-                    call.on('close', () => setRemoteScreenStream(null));
+                    call.on('close', () => {
+                        setRemoteScreenStream(null);
+                        pushLog('Screen share ended');
+                    });
                 } else {
                     const stream = await getMic();
                     call.answer(stream);
@@ -165,6 +170,12 @@ export default function App() {
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
+
+    useEffect(() => {
+        if (remoteScreenRef.current && remoteScreenStream) {
+            remoteScreenRef.current.srcObject = remoteScreenStream;
+        }
+    }, [remoteScreenStream])
 
     function pushLog(x) { setLog((l) => [x, ...l].slice(0, 200)) }
 
@@ -696,7 +707,7 @@ export default function App() {
                             </div>
                         )}
 
-                        {/* Connection */
+                        {/* Connection */}
                         <div className="card compact">
                             <div className="section-title">Connect</div>
                             <input
@@ -714,7 +725,6 @@ export default function App() {
                                 Connect
                             </button>
                         </div>
-                        }
 
                         {/* Call Controls */}
                         <div className="card compact">
@@ -731,14 +741,24 @@ export default function App() {
                                 <button disabled={!streamActive} onClick={toggleMute} className="secondary" style={{ fontSize: '12px', padding: '8px' }}>
                                     {muted ? 'Unmute' : 'Mute'}
                                 </button>
-                                <button
-                                    onClick={startScreenShare}
-                                    disabled={!connected || sharingScreen}
-                                    className="secondary"
-                                    style={{ fontSize: '12px', padding: '8px' }}
-                                >
-                                    Share
-                                </button>
+                                {!sharingScreen ? (
+                                    <button
+                                        onClick={startScreenShare}
+                                        disabled={!connected}
+                                        className="secondary"
+                                        style={{ fontSize: '12px', padding: '8px' }}
+                                    >
+                                        Share
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={stopScreenShare}
+                                        className="danger"
+                                        style={{ fontSize: '12px', padding: '8px' }}
+                                    >
+                                        Stop
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -767,13 +787,32 @@ export default function App() {
                     <div className="center-panel">
                         {/* Screen Share Display */}
                         <div className="card fill">
-                            <div className="section-title">Shared Screen</div>
+                            <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                Shared Screen
+                                {remoteScreenStream && (
+                                    <button 
+                                        onClick={() => setIsFullscreen(!isFullscreen)}
+                                        className="secondary"
+                                        style={{ fontSize: '10px', padding: '4px 8px' }}
+                                    >
+                                        {isFullscreen ? 'Exit' : 'Fullscreen'}
+                                    </button>
+                                )}
+                            </div>
                             {remoteScreenStream ? (
                                 <video
                                     ref={remoteScreenRef}
                                     autoPlay
                                     playsInline
-                                    style={{ width: '100%', height: '200px', borderRadius: '8px', objectFit: 'contain' }}
+                                    onClick={() => setIsFullscreen(!isFullscreen)}
+                                    style={{ 
+                                        width: '100%', 
+                                        height: isFullscreen ? '80vh' : '400px', 
+                                        borderRadius: '8px', 
+                                        objectFit: 'contain',
+                                        cursor: 'pointer',
+                                        background: '#000'
+                                    }}
                                 />
                             ) : (
                                 <div style={{
@@ -782,7 +821,7 @@ export default function App() {
                                     padding: '20px',
                                     textAlign: 'center',
                                     opacity: 0.5,
-                                    height: '200px',
+                                    height: '400px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center'
@@ -793,9 +832,10 @@ export default function App() {
                         </div>
 
                         {/* Text Chat */}
-                        <div className="card">
-                            <div className="section-title">Chat</div>
-                            <div style={{ height: '300px', display: 'flex', flexDirection: 'column' }}>
+                        {!isFullscreen && (
+                            <div className="card">
+                                <div className="section-title">Chat</div>
+                                <div style={{ height: '300px', display: 'flex', flexDirection: 'column' }}>
                                 <div className="chat-messages" style={{ height: '250px', overflowY: 'auto', marginBottom: 12, padding: '8px', background: '#0f172a', borderRadius: '6px' }}>
                                     {messages.length === 0 ? (
                                         <div style={{
@@ -842,6 +882,7 @@ export default function App() {
                                 </div>
                             </div>
                         </div>
+                        )}
                     </div>
 
                     {/* Right Panel - Status & Peers */}
