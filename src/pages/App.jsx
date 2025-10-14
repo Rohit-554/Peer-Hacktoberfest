@@ -673,7 +673,30 @@ export default function App() {
                             </div>
                         </div>
 
-                        {/* Connection */}
+                        {/* QR Code Display */}
+                        {showQR && myId && (
+                            <div className="card compact">
+                                <div className="section-title">QR Code</div>
+                                <div style={{ textAlign: 'center' }}>
+                                    <img 
+                                        src={qrUrl} 
+                                        alt="QR Code" 
+                                        style={{ 
+                                            width: '150px', 
+                                            height: '150px', 
+                                            borderRadius: '8px',
+                                            background: 'white',
+                                            padding: '8px'
+                                        }} 
+                                    />
+                                    <div style={{ fontSize: '10px', opacity: 0.7, marginTop: 8 }}>
+                                        Scan to connect
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Connection */
                         <div className="card compact">
                             <div className="section-title">Connect</div>
                             <input
@@ -691,6 +714,7 @@ export default function App() {
                                 Connect
                             </button>
                         </div>
+                        }
 
                         {/* Call Controls */}
                         <div className="card compact">
