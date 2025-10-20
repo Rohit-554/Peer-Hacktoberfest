@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import Peer from 'peerjs';
 import PeerList from '../components/PeerList';
+import EmojiReactions from '../components/EmojiReactions';
 import { MultiPeerManager } from '../utils/MultiPeerManager';
 import { AudioStreamManager } from '../utils/AudioStreamManager';
+import { DataChannelManager } from '../utils/DataChannelManager';
 import { 
   PEER_CONFIG, 
   ICE_CONFIG, 
@@ -30,6 +32,7 @@ function App() {
   const localStreamRef = useRef(null);
   const multiPeerManagerRef = useRef(null);
   const audioManagerRef = useRef(null);
+  const dataChannelManagerRef = useRef(null);
 
   // Initialize PeerJS and managers
   useEffect(() => {
@@ -74,12 +77,16 @@ function App() {
 
     // Initialize managers
     audioManagerRef.current = new AudioStreamManager();
+    dataChannelManagerRef.current = new DataChannelManager();
     multiPeerManagerRef.current = new MultiPeerManager(peer, {
       onPeerStream: handlePeerStream,
       onPeerDisconnect: handlePeerDisconnect,
       onConnectionStateChange: handleConnectionStateChange,
       onError: handlePeerError,
     });
+
+    // Connect data channel manager to multi-peer manager
+    multiPeerManagerRef.current.setDataChannelManager(dataChannelManagerRef.current);
 
     // Cleanup on unmount
     return () => {
@@ -297,6 +304,14 @@ function App() {
               />
             </section>
           )}
+
+          {/* Emoji Reactions Section */}
+          <section className="section reactions-section">
+            <EmojiReactions
+              dataChannelManager={dataChannelManagerRef.current}
+              isInCall={isInCall}
+            />
+          </section>
 
           {/* Info Section */}
           <section className="section info-section">

@@ -11,12 +11,20 @@ export class MultiPeerManager {
     this.localPeer = localPeer;
     this.activeCalls = new Map(); // Map<peerId, MediaConnection>
     this.connectionStates = new Map(); // Map<peerId, string>
+    this.dataChannelManager = null; // Will be set externally
     
     // Callbacks
     this.onPeerStream = callbacks.onPeerStream || (() => {});
     this.onPeerDisconnect = callbacks.onPeerDisconnect || (() => {});
     this.onConnectionStateChange = callbacks.onConnectionStateChange || (() => {});
     this.onError = callbacks.onError || console.error;
+  }
+
+  /**
+   * Set data channel manager for handling reactions
+   */
+  setDataChannelManager(manager) {
+    this.dataChannelManager = manager;
   }
 
   /**
@@ -95,6 +103,17 @@ export class MultiPeerManager {
    * Setup event handlers for a call
    */
   setupCallHandlers(call, peerId) {
+    // Setup data channel if manager is available
+    if (this.dataChannelManager && call.peerConnection) {
+      // Listen for incoming data channels
+      call.peerConnection.ondatachannel = (event) => {
+        this.dataChannelManager.handleDataChannel(peerId, event.channel);
+      };
+      
+      // Create outgoing data channel
+      this.dataChannelManager.createDataChannel(peerId, call.peerConnection);
+    }
+
     // Handle remote stream
     call.on('stream', (remoteStream) => {
       console.log(`Received stream from peer: ${peerId}`);
@@ -133,6 +152,11 @@ export class MultiPeerManager {
       this.activeCalls.delete(peerId);
     }
 
+    // Remove data channel
+    if (this.dataChannelManager) {
+      this.dataChannelManager.removeChannel(peerId);
+    }
+
     this.connectionStates.delete(peerId);
     this.onPeerDisconnect(peerId);
     
@@ -152,6 +176,11 @@ export class MultiPeerManager {
         console.warn(`Error closing call with ${peerId}:`, error);
       }
     });
+
+    // Close all data channels
+    if (this.dataChannelManager) {
+      this.dataChannelManager.closeAll();
+    }
 
     this.activeCalls.clear();
     this.connectionStates.clear();

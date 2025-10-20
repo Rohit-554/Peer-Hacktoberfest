@@ -527,6 +527,117 @@ body {
   }
 }
 
+/* Emoji Reactions */
+.emoji-reactions-panel {
+  padding: 16px;
+}
+
+.emoji-reactions-panel h3 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.emoji-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.emoji-button {
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.emoji-button:hover {
+  transform: scale(1.15) rotate(5deg);
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.emoji-button:active {
+  transform: scale(0.95);
+}
+
+/* Floating Reactions Container */
+.floating-reactions-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.floating-reaction {
+  position: absolute;
+  bottom: -50px;
+  font-size: 3rem;
+  animation: floatUp 3s ease-out forwards;
+  pointer-events: none;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes floatUp {
+  0% {
+    bottom: -50px;
+    opacity: 0;
+    transform: translateY(0) scale(0.5) rotate(0deg);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-50px) scale(1) rotate(5deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-300px) scale(1.2) rotate(-5deg);
+  }
+  100% {
+    bottom: 100vh;
+    opacity: 0;
+    transform: translateY(-600px) scale(0.8) rotate(10deg);
+  }
+}
+
+/* Reactions Section */
+.reactions-section {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(139, 92, 246, 0.1));
+  border: 2px solid var(--border);
+  position: relative;
+  overflow: visible;
+}
+
+/* Responsive Emoji Buttons */
+@media (max-width: 768px) {
+  .emoji-button {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+
+  .floating-reaction {
+    font-size: 2rem;
+  }
+
+  .emoji-reactions-panel h3 {
+    font-size: 1rem;
+  }
+}
+
 /* Print Styles */
 @media print {
   .app {
@@ -534,7 +645,9 @@ body {
   }
 
   .btn,
-  .peer-controls {
+  .peer-controls,
+  .emoji-reactions-panel,
+  .floating-reactions-container {
     display: none;
   }
 }
